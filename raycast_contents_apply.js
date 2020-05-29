@@ -41,9 +41,12 @@ class Map {
             for (var j = 0; j < MAP_NUM_COLS; j++) {
                 var tileX = j * TILE_SIZE;
                 var tileY = i * TILE_SIZE;
-                var tileColor = this.grid[i][j] != 0 ? "#222" : "#fff";
+                var colorR = this.grid[i][j] == 1 ? 255 : this.grid[i][j] == 2 ? 0 : this.grid[i][j] == 3 ? 0 : 255;
+                var colorG = this.grid[i][j] == 1 ? 0 : this.grid[i][j] == 2 ? 255 : this.grid[i][j] == 3 ? 0 : 255;
+                var colorB = this.grid[i][j] == 1 ? 0 : this.grid[i][j] == 2 ? 0 : this.grid[i][j] == 3 ? 255 : 255;
+                fill("rgb(" + colorR + ", " + colorG + ", " + colorB + ")");
+                //var tileColor = this.grid[i][j] != 0 ? "#222" : "#fff";
                 stroke("white");
-                fill(tileColor);
                 rect(
                     MINIMAP_SCALE_FACTOR * tileX,
                     MINIMAP_SCALE_FACTOR * tileY,
