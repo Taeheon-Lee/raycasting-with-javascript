@@ -42,7 +42,7 @@ class Map {
                 var tileX = j * TILE_SIZE;
                 var tileY = i * TILE_SIZE;
                 var tileColor = this.grid[i][j] == 1 ? "#222" : "#fff";
-                stroke("#222");
+                stroke("#fff");
                 fill(tileColor);
                 rect(
                     MINIMAP_SCALE_FACTOR * tileX,
