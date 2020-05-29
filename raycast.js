@@ -111,7 +111,7 @@ class Ray {
         this.isRayFacingRight = this.rayAngle > 1.5 * Math.PI || this.rayAngle < 0.5 * Math.PI;
         this.isRayFacingLeft = !this.isRayFacingRight;
     }
-    cast(columnId) {
+    cast() {
         var xintercept, yintercept;
         var xstep, ystep;
 
@@ -140,12 +140,12 @@ class Ray {
         var nextHorzTouchX = xintercept;
         var nextHorzTouchY = yintercept;
 
-        if (this.isRayFacingUp)
-            nextHorzTouchY--;
+        // if (this.isRayFacingUp)
+        //     nextHorzTouchY--;
 
         // Increment xstep and ystep until we find a wall
         while (nextHorzTouchX >= 0 && nextHorzTouchX <= WINDOW_WIDTH && nextHorzTouchY >= 0 && nextHorzTouchY <= WINDOW_HEIGHT) {
-            if (grid.hasWallAt(nextHorzTouchX, nextHorzTouchY)) {
+            if (grid.hasWallAt(nextHorzTouchX, nextHorzTouchY - (this.isRayFacingUp ? 1 : 0))) {
                 foundHorzWallHit = true;
                 horzWallHitX = nextHorzTouchX;
                 horzWallHitY = nextHorzTouchY;
@@ -187,12 +187,12 @@ class Ray {
         var nextVertTouchX = xintercept;
         var nextVertTouchY = yintercept;
 
-        if (this.isRayFacingLeft)
-            nextVertTouchX--;
+        // if (this.isRayFacingLeft)
+        //     nextVertTouchX--;
 
         // Increment xstep and ystep until we find a wall
         while (nextVertTouchX >= 0 && nextVertTouchX <= WINDOW_WIDTH && nextVertTouchY >= 0 && nextVertTouchY <= WINDOW_HEIGHT) {
-            if (grid.hasWallAt(nextVertTouchX, nextVertTouchY)) {
+            if (grid.hasWallAt(nextVertTouchX - (this.isRayFacingLeft ? 1 : 0), nextVertTouchY)) {
                 foundVertWallHit = true;
                 vertWallHitX = nextVertTouchX;
                 vertWallHitY = nextVertTouchY;
@@ -214,13 +214,21 @@ class Ray {
         var vertHitDistance = (foundVertWallHit) ? distanceBetweenPoints(player.x, player.y, vertWallHitX, vertWallHitY) : Number.MAX_VALUE;
 
         // only stor the smallest of the distances
-        this.wallHitX = (horzHitDistance < vertHitDistance) ? horzWallHitX : vertWallHitX;
-        this.wallHitY = (horzHitDistance < vertHitDistance) ? horzWallHitY : vertWallHitY;
-        this.distance = (horzHitDistance < vertHitDistance) ? horzHitDistance : vertHitDistance;
-        this.wasHitVertical = (vertHitDistance < horzHitDistance);
+        if (vertHitDistance < horzHitDistance) {
+            this.wallHitX = vertWallHitX;
+            this.wallHitY = vertWallHitY;
+            this.distance = vertHitDistance;
+            this.wasHitVertical = true;
+        }
+        else {
+            this.wallHitX = horzWallHitX;
+            this.wallHitY = horzWallHitY;
+            this.distance = horzHitDistance;
+            this.wasHitVertical = false;
+        }
     }
     render() {
-        stroke("rgba(255, 0, 0, 1.0)");
+        stroke("#FFC500");
         line(
             MINIMAP_SCALE_FACTOR * player.x,
             MINIMAP_SCALE_FACTOR * player.y,
@@ -259,22 +267,18 @@ function keyReleased() {
 }
 
 function castAllRays() {
-    var columnId = 0;
-
     // start first ray subtracting half of the FOV
     var rayAngle = player.rotationAngle - (FOV_ANGLE / 2);
 
     rays = [];
 
     // loop all columns casting the rays
-    for (var i = 0; i < NUM_RAYS; i++) {
+    for (var col = 0; col < NUM_RAYS; col++) {
         var ray = new Ray(rayAngle);
-        ray.cast(columnId);
+        ray.cast();
         rays.push(ray);
 
         rayAngle += FOV_ANGLE / NUM_RAYS;
-
-        columnId++;
     }
 }
 
@@ -293,10 +297,13 @@ function render3DProjectedWalls() {
         var wallStripHeight = (TILE_SIZE / rayDistance) * distanceProjectionPlane;
 
         // compute the transparency based on the wall distance
-        var alpha = 170 / rayDistance;
+        // var shade = 170 / rayDistance;
+        var shade = 1;
+
+        var color = ray.wasHitVertical ? 255 : 180;
 
         //render a rectangle with the calaulated wall height
-        fill("rgba(255, 255, 255, " + alpha + ")");
+        fill("rgba(" + color + "," + color + "," + color + "," + shade + ")");
         noStroke();
         rect(
             i * WALL_STRIP_WIDTH,
